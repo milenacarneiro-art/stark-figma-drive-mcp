@@ -1,6 +1,36 @@
 # stark-figma-drive-mcp
 
-MCP Server para exportar frames do Figma e fazer upload automatico para o Google Drive. Criado para o time de design da Stark.
+Claude Code Plugin que exporta frames do Figma e faz upload automatico para o Google Drive. Criado para o time de design da Stark.
+
+## Instalacao (Claude Code Plugin)
+
+### 1. Clonar o repositorio
+
+```bash
+git clone https://github.com/angelostark/stark-figma-drive-mcp.git
+cd stark-figma-drive-mcp
+npm install && npm run build
+```
+
+### 2. Configurar credenciais
+
+Crie um arquivo `.env` na raiz (ou configure as variaveis de ambiente):
+
+| Variavel | Descricao |
+|----------|-----------|
+| `FIGMA_TOKEN` | Personal Access Token do Figma ([gerar aqui](https://www.figma.com/settings)) |
+| `GOOGLE_CREDENTIALS_PATH` | Caminho para o `credentials.json` do Service Account do Google |
+
+### 3. Instalar o plugin no Claude Code
+
+Aponte o Claude Code para a pasta do repositorio clonado. O arquivo `.claude-plugin/plugin.json` sera detectado automaticamente, registrando:
+
+- **MCP Server** `figma-drive` — tools de export e upload
+- **Skill** `/figma-export-para-drive` — orquestra o fluxo completo (Figma + Drive + ClickUp)
+
+### 4. Verificar
+
+No Claude Code, a skill `/figma-export-para-drive` deve aparecer na lista de skills disponiveis e as tools `export_figma_frames`, `upload_to_drive` e `figma_to_drive` devem estar acessiveis.
 
 ## Tools disponiveis
 
@@ -10,77 +40,15 @@ MCP Server para exportar frames do Figma e fazer upload automatico para o Google
 | `upload_to_drive` | Upload para o Google Drive com navegacao automatica de pastas |
 | `figma_to_drive` | Pipeline completo: Figma export + Drive upload |
 
-## Setup
-
-### 1. Gerar Token do Figma
-
-1. Acesse [Figma Settings](https://www.figma.com/settings) > **Personal Access Tokens**
-2. Crie um token com permissao de leitura
-3. Guarde o token (formato: `figd_...`)
-
-### 2. Credenciais do Google Drive
-
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um Service Account com acesso ao Drive API
-3. Baixe o arquivo `credentials.json`
-4. Compartilhe o Shared Drive "Clientes" com o email do service account
-
-### 3. Configurar no Claude Code
-
-Adicione no `~/.claude.json` ou no `.claude/settings.json` do projeto:
-
-```json
-{
-  "mcpServers": {
-    "figma-drive": {
-      "command": "node",
-      "args": ["/caminho/para/stark-figma-drive-mcp/dist/index.js"],
-      "env": {
-        "FIGMA_TOKEN": "figd_...",
-        "GOOGLE_CREDENTIALS_PATH": "/caminho/para/credentials.json"
-      }
-    }
-  }
-}
-```
-
-**Via GitHub (quando publicado):**
-
-```json
-{
-  "mcpServers": {
-    "figma-drive": {
-      "command": "npx",
-      "args": ["github:angelostark/stark-figma-drive-mcp"],
-      "env": {
-        "FIGMA_TOKEN": "figd_...",
-        "GOOGLE_CREDENTIALS_PATH": "/caminho/para/credentials.json"
-      }
-    }
-  }
-}
-```
-
-### 4. Copiar a Skill (opcional)
-
-Copie `commands/figma-export-para-drive.md` para `.claude/commands/` do seu projeto. Isso permite usar `/figma-export-para-drive` no Claude Code para orquestrar o fluxo completo (Figma + Drive + ClickUp).
-
-## Build
-
-```bash
-npm install
-npm run build
-```
-
 ## Uso
 
-### Via Claude Code (com skill)
+### Via skill (recomendado)
 
 ```
 /figma-export-para-drive
 ```
 
-Cole o link do Figma quando solicitado.
+Cole o link do Figma quando solicitado. A skill cuida de tudo: export, upload, comentario no ClickUp e notificacao do responsavel.
 
 ### Via MCP tools diretamente
 
@@ -119,6 +87,28 @@ Clientes / [cliente] / Cronograma de Conteudo / Artes / [ano] / [mes] / [data]
 ```
 
 Pastas inexistentes sao criadas automaticamente.
+
+## Estrutura do plugin
+
+```
+stark-figma-drive-mcp/
+├── .claude-plugin/
+│   └── plugin.json            # Metadata + MCP server config
+├── skills/
+│   └── figma-export-para-drive/
+│       └── SKILL.md           # Skill de orquestracao
+├── src/                       # MCP server source
+├── dist/                      # Compilado
+├── package.json
+└── tsconfig.json
+```
+
+## Build
+
+```bash
+npm install
+npm run build
+```
 
 ## Requisitos
 

@@ -1,0 +1,20 @@
+{
+  "name": "stark-figma-drive",
+  "version": "1.0.0",
+  "description": "Exporta frames do Figma e faz upload automatico para o Google Drive do cliente",
+  "author": "Angelo Gabriel <angelo@starkmkt.com>",
+  "repository": "https://github.com/angelostark/stark-figma-drive-mcp",
+  "license": "MIT",
+  "keywords": ["figma", "google-drive", "design", "stark"],
+  "skills": ["skills/"],
+  "mcpServers": {
+    "figma-drive": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "FIGMA_TOKEN": "",
+        "GOOGLE_CREDENTIALS_PATH": ""
+      }
+    }
+  }
+}
