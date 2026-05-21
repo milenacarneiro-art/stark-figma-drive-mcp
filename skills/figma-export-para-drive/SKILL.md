@@ -38,10 +38,16 @@ Os frames no Figma seguem este padrao:
 ```
 [DATA] - [NOME DO DRIVE]
 ```
-Exemplos:
-- `2026-03-17 - Stark`
-- `2026-03-20 - Nike Brasil`
-- `2026-03-15 - Clinica Saude`
+
+**Formatos de data aceitos:**
+
+| Formato | Exemplo completo | Quando usar |
+|---------|-----------------|-------------|
+| `DD-MM` | `27-05 - Dr. Rodolfo` | Padrao da Milena (ano corrente automatico) |
+| `DD-MM-AA` | `27-05-26 - Dr. Rodolfo` | Com ano abreviado (assume seculo 20XX) |
+| `YYYY-MM-DD` | `2026-05-27 - Dr. Rodolfo` | Formato completo ISO |
+
+Todos os formatos sao convertidos automaticamente para `YYYY-MM-DD` internamente.
 
 A **data** (antes do ` - `) define a subpasta no Drive.
 O **nome do Drive** (depois do ` - `) e o nome exato da pasta do cliente no Google Drive.
