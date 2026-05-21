@@ -10,11 +10,7 @@
   "mcpServers": {
     "figma-drive": {
       "command": "node",
-      "args": ["dist/index.js"],
-      "env": {
-        "FIGMA_TOKEN": "",
-        "GOOGLE_CREDENTIALS_PATH": ""
-      }
+      "args": ["dist/index.js"]
     }
   }
 }

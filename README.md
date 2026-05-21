@@ -14,12 +14,20 @@ npm install && npm run build
 
 ### 2. Configurar credenciais
 
-Crie um arquivo `.env` na raiz (ou configure as variaveis de ambiente):
+As variaveis de ambiente devem ser definidas **no nivel do sistema ou do shell** antes de subir o MCP server — o `plugin.json` nao injeta valores para nao expor tokens no git.
 
 | Variavel | Descricao |
 |----------|-----------|
 | `FIGMA_TOKEN` | Personal Access Token do Figma ([gerar aqui](https://www.figma.com/settings)) |
-| `GOOGLE_CREDENTIALS_PATH` | Caminho para o `credentials.json` do Service Account do Google |
+| `GOOGLE_CREDENTIALS_PATH` | Caminho absoluto para o `credentials.json` do Service Account do Google |
+
+**Windows (PowerShell — permanente por usuario):**
+```powershell
+[System.Environment]::SetEnvironmentVariable("FIGMA_TOKEN", "seu-token-aqui", "User")
+[System.Environment]::SetEnvironmentVariable("GOOGLE_CREDENTIALS_PATH", "C:\caminho\credentials.json", "User")
+```
+
+> ⚠️ Reinicie o Claude Code apos definir as variaveis para que o MCP server as herde.
 
 ### 3. Instalar o plugin no Claude Code
 
@@ -66,7 +74,7 @@ export_figma_frames({
 upload_to_drive({
   clientName: "Stark",
   date: "2026-03-17",
-  files: ["/tmp/figma_exports/2026-03-17-Stark-card-01.png"]
+  files: ["C:\\Users\\...\\AppData\\Local\\Temp\\figma_exports\\2026-03-17-Stark-card-01.png"]
 })
 ```
 

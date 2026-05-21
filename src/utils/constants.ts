@@ -1,5 +1,8 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 export const FIGMA_API_BASE = 'https://api.figma.com/v1';
-export const DEFAULT_OUTPUT = '/tmp/figma_exports';
+export const DEFAULT_OUTPUT = join(tmpdir(), 'figma_exports');
 export const DEFAULT_SCALE = 2;
 export const DEFAULT_BATCH_SIZE = 5;
 

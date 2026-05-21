@@ -63,7 +63,7 @@ Se o usuario forneceu um link (ex.: `https://figma.com/design/XYZABC/Nome?node-i
 - Extraia o `fileKey` da URL (segmento apos `/design/`)
 - Extraia o `nodeId` do parametro `node-id` convertendo `-` para `:` (ex.: `1-2` → `1:2`)
 
-Use `mcp__claude_ai_Figma__get_metadata` com `fileKey` e `nodeId` para confirmar o nome do frame e listar frames filhos.
+Use `mcp__59f97713-bd7a-4dea-be37-85f967a2058e__get_metadata` com `fileKey` e `nodeId` para confirmar o nome do frame e listar frames filhos.
 
 Se nao tiver URL, peca ao usuario que copie o link via "Copy link to selection" no Figma.
 
@@ -77,7 +77,7 @@ Se o nome do frame nao tiver o padrao `[DATA] - [NOME]`, pergunte ao usuario ant
 
 ### ETAPA 3 — Identificar tipo de post e exportar
 
-Use `mcp__claude_ai_Figma__get_metadata` no frame principal para verificar frames filhos.
+Use `mcp__59f97713-bd7a-4dea-be37-85f967a2058e__get_metadata` no frame principal para verificar frames filhos.
 
 #### Estatico (sem frames filhos)
 Use a MCP tool `export_figma_frames` com:
@@ -106,7 +106,7 @@ Use a MCP tool `upload_to_drive` com:
 {
   "clientName": "[NOME_DRIVE]",
   "date": "[DATA]",
-  "files": ["/tmp/figma_exports/[DATA]-[NOME_DRIVE]-card-01.png", "..."]
+  "files": ["%TEMP%\figma_exports/[DATA]-[NOME_DRIVE]-card-01.png", "..."]
 }
 ```
 
@@ -121,14 +121,14 @@ Capture o `folderLink` do resultado para usar no comentario do ClickUp.
 
 1. Mostre o erro ao usuario
 2. Informe o caminho completo onde os arquivos devem ir no Drive
-3. Liste os PNGs locais em `/tmp/figma_exports/`
+3. Liste os PNGs locais em `%TEMP%\figma_exports/`
 4. Pergunte:
 > "O upload automatico falhou. Suba os PNGs manualmente na pasta acima e me mande o **link da pasta** no Drive pra continuar com o ClickUp."
 5. Aguarde o `folderLink` do usuario antes de prosseguir.
 
 ### ETAPA 5 — Encontrar a subtarefa no ClickUp
 
-Use `mcp__claude_ai_ClickUp__clickup_search` com o `nome_drive` como termo de busca.
+Use `mcp__2d24fa11-1001-4c98-bf3c-7dcc3b7bdfaf__clickup_search` com o `nome_drive` como termo de busca.
 
 **Regras de desambiguacao:**
 - Se encontrar multiplas tarefas, priorize as com status ativo (nao concluido)
@@ -138,13 +138,13 @@ Use `mcp__claude_ai_ClickUp__clickup_search` com o `nome_drive` como termo de bu
 ### ETAPA 6 — Encontrar o responsavel da tarefa mae
 
 Com o ID da subtarefa:
-1. Use `mcp__claude_ai_ClickUp__clickup_get_task` para obter detalhes e o campo `parent`
-2. Use `mcp__claude_ai_ClickUp__clickup_get_task` novamente com o `parent` ID para obter a tarefa mae
+1. Use `mcp__2d24fa11-1001-4c98-bf3c-7dcc3b7bdfaf__clickup_get_task` para obter detalhes e o campo `parent`
+2. Use `mcp__2d24fa11-1001-4c98-bf3c-7dcc3b7bdfaf__clickup_get_task` novamente com o `parent` ID para obter a tarefa mae
 3. Leia o campo `assignees` da tarefa mae — pegue todos os assignees
 
 ### ETAPA 7 — Postar comentario na subtarefa
 
-Use `mcp__claude_ai_ClickUp__clickup_create_task_comment` na subtarefa com este formato:
+Use `mcp__2d24fa11-1001-4c98-bf3c-7dcc3b7bdfaf__clickup_create_task_comment` na subtarefa com este formato:
 
 ```
 📁 Arquivos exportados para o Google Drive:
@@ -155,13 +155,13 @@ CC: @[Nome do Responsavel 1] @[Nome do Responsavel 2]
 
 Use `assignee` com o ID do responsavel da tarefa mae e `notify_all: true`.
 
-### ETAPA 7.1 — Atualizar status da subtarefa para "edicao concluida"
+### ETAPA 7.1 — Atualizar status da subtarefa para "ENVIO PENDENTE"
 
-Use `mcp__claude_ai_ClickUp__clickup_update_task` na subtarefa:
+Use `mcp__2d24fa11-1001-4c98-bf3c-7dcc3b7bdfaf__clickup_update_task` na subtarefa:
 ```json
 {
   "task_id": "[ID DA SUBTAREFA]",
-  "status": "edição concluída"
+  "status": "ENVIO PENDENTE"
 }
 ```
 
@@ -180,7 +180,7 @@ Use `mcp__claude_ai_ClickUp__clickup_update_task` na subtarefa:
 
 🔗 ClickUp:
    └── Subtarefa: "[Nome da Subtarefa]"
-   └── Status: edicao concluida ✅
+   └── Status: ENVIO PENDENTE ✅
    └── Comentario postado com link do Drive
    └── Responsavel notificado: @[Nome(s)] (tarefa mae: "[nome da tarefa mae]")
 ```
