@@ -2,7 +2,7 @@ import { google, drive_v3 } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
 import { createReadStream, statSync } from 'node:fs';
 import { basename } from 'node:path';
-import { MESES, CONTENT_FOLDER_NAMES, DRIVE_SCOPES } from '../utils/constants.js';
+import { MESES, CONTENT_FOLDER_NAMES, DRIVE_SCOPES, normalizeDate } from '../utils/constants.js';
 
 export interface UploadedFile {
   name: string;
@@ -195,10 +195,13 @@ async function navigateToDateFolder(
   clientName: string,
   dateStr: string,
 ): Promise<NavigationResult> {
-  const parts = dateStr.split('-');
+  // Aceita DD-MM, DD-MM-AA e YYYY-MM-DD — normaliza para YYYY-MM-DD
+  const normalized = normalizeDate(dateStr);
+  const parts = normalized.split('-');
   if (parts.length !== 3) {
-    throw new Error(`Data invalida '${dateStr}'. Use formato YYYY-MM-DD.`);
+    throw new Error(`Data invalida '${dateStr}'. Use formato DD-MM, DD-MM-AA ou YYYY-MM-DD.`);
   }
+  dateStr = normalized;
 
   const ano = parts[0];
   const mesNum = parseInt(parts[1], 10);

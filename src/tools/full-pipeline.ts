@@ -1,33 +1,38 @@
 import { z } from 'zod';
 import { exportFigmaFrames } from '../services/figma-api.js';
 import { uploadToDrive } from '../services/drive-api.js';
+import { normalizeDate } from '../utils/constants.js';
 
 export const fullPipelineSchema = z.object({
   fileKey: z.string().describe('File key do Figma'),
   nodeIds: z.array(z.string()).describe('Node IDs para exportar'),
-  frameName: z.string().describe('Nome do frame no formato "[DATA] - [NOME]" (ex: "2026-03-17 - Stark")'),
+  frameName: z.string().describe(
+    'Nome do frame no formato "[DATA] - [NOME]". ' +
+    'Formatos de data aceitos: DD-MM (ex: "27-05 - Dr. Rodolfo"), ' +
+    'DD-MM-AA (ex: "27-05-26 - Dr. Rodolfo") ou ' +
+    'YYYY-MM-DD (ex: "2026-05-27 - Dr. Rodolfo").'
+  ),
   scale: z.number().optional().default(2).describe('Escala do export (default: 2)'),
   credentialsPath: z.string().optional().describe('Caminho para o arquivo credentials.json do Google'),
 });
 
 export type FullPipelineInput = z.infer<typeof fullPipelineSchema>;
 
-function parseFrameName(frameName: string): { date: string; clientName: string } {
+function parseFrameName(frameName: string): { date: string; clientName: string; rawDate: string } {
   const sepIndex = frameName.indexOf(' - ');
   if (sepIndex === -1) {
     throw new Error(
       `Nome do frame nao segue o padrao "[DATA] - [NOME]": "${frameName}". ` +
-      'Exemplo valido: "2026-03-17 - Stark"'
+      'Exemplos validos: "27-05 - Dr. Rodolfo", "27-05-26 - Dr. Rodolfo", "2026-05-27 - Dr. Rodolfo".'
     );
   }
-  const date = frameName.substring(0, sepIndex).trim();
+  const rawDate = frameName.substring(0, sepIndex).trim();
   const clientName = frameName.substring(sepIndex + 3).trim();
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    throw new Error(`Data invalida no nome do frame: "${date}". Use formato YYYY-MM-DD.`);
-  }
+  // normalizeDate aceita DD-MM, DD-MM-AA e YYYY-MM-DD
+  const date = normalizeDate(rawDate);
 
-  return { date, clientName };
+  return { date, clientName, rawDate };
 }
 
 export async function handleFullPipeline(input: FullPipelineInput) {
