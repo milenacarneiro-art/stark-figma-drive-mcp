@@ -1,6 +1,6 @@
 import { google, drive_v3 } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, statSync, existsSync, renameSync } from 'node:fs';
 import { basename } from 'node:path';
 import { MESES, CONTENT_FOLDER_NAMES, DRIVE_SCOPES, normalizeDate } from '../utils/constants.js';
 
@@ -23,7 +23,7 @@ interface DriveFolder {
   webViewLink?: string;
 }
 
-function getDriveService(credentialsPath?: string): drive_v3.Drive {
+function resolveCredentialsPath(credentialsPath?: string): string {
   const keyFile = credentialsPath || process.env.GOOGLE_CREDENTIALS_PATH;
   if (!keyFile) {
     throw new Error(
@@ -31,6 +31,28 @@ function getDriveService(credentialsPath?: string): drive_v3.Drive {
       'ou passe credentialsPath.'
     );
   }
+
+  if (existsSync(keyFile)) return keyFile;
+
+  // Auto-corrige dupla extensão: credentials.json.json → credentials.json
+  if (keyFile.endsWith('.json.json')) {
+    const fixed = keyFile.slice(0, -5);
+    if (existsSync(fixed)) return fixed;
+    // Tenta renomear para corrigir permanentemente
+    try {
+      renameSync(keyFile, fixed);
+      return fixed;
+    } catch { /* ignora se não conseguir renomear */ }
+  }
+
+  throw new Error(
+    `Arquivo de credenciais nao encontrado: ${keyFile}. ` +
+    'Verifique se o credentials.json existe no diretório do MCP.'
+  );
+}
+
+function getDriveService(credentialsPath?: string): drive_v3.Drive {
+  const keyFile = resolveCredentialsPath(credentialsPath);
 
   const auth = new GoogleAuth({
     keyFile,
@@ -159,8 +181,10 @@ async function uploadFile(
   const fileName = basename(filePath);
   const ext = fileName.toLowerCase().split('.').pop();
   const mimeType =
-    ext === 'png' ? 'image/png' :
+    ext === 'png'  ? 'image/png' :
     ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+    ext === 'mp4'  ? 'video/mp4' :
+    ext === 'mov'  ? 'video/quicktime' :
     'application/octet-stream';
 
   const res = await drive.files.create({
