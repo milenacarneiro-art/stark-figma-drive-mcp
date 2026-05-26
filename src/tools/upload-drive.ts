@@ -7,6 +7,7 @@ export const uploadDriveSchema = z.object({
   files: z.array(z.string()).optional().default([]).describe('Caminhos dos arquivos PNG para upload'),
   dryRun: z.boolean().optional().default(false).describe('Se true, apenas navega as pastas sem fazer upload'),
   credentialsPath: z.string().optional().describe('Caminho para o arquivo credentials.json do Google'),
+  startFolderId: z.string().optional().describe('ID da pasta de ano no Drive para pular a navegação automática (ex: clientes com estrutura não-padrão)'),
 });
 
 export type UploadDriveInput = z.infer<typeof uploadDriveSchema>;
@@ -18,6 +19,7 @@ export async function handleUploadDrive(input: UploadDriveInput) {
     files: input.files,
     dryRun: input.dryRun,
     credentialsPath: input.credentialsPath,
+    startFolderId: input.startFolderId,
   });
 
   return {

@@ -218,6 +218,7 @@ async function navigateToDateFolder(
   drive: drive_v3.Drive,
   clientName: string,
   dateStr: string,
+  startFolderId?: string,
 ): Promise<NavigationResult> {
   // Aceita DD-MM, DD-MM-AA e YYYY-MM-DD — normaliza para YYYY-MM-DD
   const normalized = normalizeDate(dateStr);
@@ -227,7 +228,6 @@ async function navigateToDateFolder(
   }
   dateStr = normalized;
 
-  const ano = parts[0];
   const mesNum = parseInt(parts[1], 10);
   const mesNome = MESES[mesNum];
   if (!mesNome) {
@@ -235,6 +235,40 @@ async function navigateToDateFolder(
   }
 
   const steps: string[] = [];
+
+  // Modo override: startFolderId aponta diretamente para a pasta de ano do cliente.
+  // Pula os níveis 1-5 (Clientes → cliente → conteudo → artes → ano).
+  if (startFolderId) {
+    steps.push(`[override] Usando startFolderId -> ${startFolderId} (${clientName})`);
+
+    // Level 6: Month
+    let pastaMes = await findFolder(drive, mesNome, startFolderId);
+    if (!pastaMes) {
+      pastaMes = await createFolder(drive, mesNome, startFolderId);
+      steps.push(`[6/7] ${mesNome} — criado -> ${pastaMes.id}`);
+    } else {
+      steps.push(`[6/7] ${mesNome} -> ${pastaMes.id}`);
+    }
+
+    // Level 7: Date
+    let pastaData = await findFolder(drive, dateStr, pastaMes.id);
+    let created = false;
+    if (!pastaData) {
+      pastaData = await createFolder(drive, dateStr, pastaMes.id);
+      created = true;
+      steps.push(`[7/7] ${dateStr} — criado -> ${pastaData.id}`);
+    } else {
+      steps.push(`[7/7] ${dateStr} -> ${pastaData.id}`);
+    }
+
+    const folderLink = pastaData.webViewLink ||
+      `https://drive.google.com/drive/folders/${pastaData.id}`;
+
+    return { folderId: pastaData.id, folderLink, created, steps };
+  }
+
+  // Modo padrão: navega Clientes → cliente → conteudo → artes → ano → mês → data
+  const ano = parts[0];
   let driveId: string | undefined;
 
   // Level 1: Shared Drive "Clientes"
@@ -335,11 +369,12 @@ export async function uploadToDrive(params: {
   files?: string[];
   dryRun?: boolean;
   credentialsPath?: string;
+  startFolderId?: string;
 }): Promise<UploadResult> {
-  const { clientName, date, files = [], dryRun = false, credentialsPath } = params;
+  const { clientName, date, files = [], dryRun = false, credentialsPath, startFolderId } = params;
 
   const drive = getDriveService(credentialsPath);
-  const nav = await navigateToDateFolder(drive, clientName, date);
+  const nav = await navigateToDateFolder(drive, clientName, date, startFolderId);
 
   if (dryRun) {
     return {
