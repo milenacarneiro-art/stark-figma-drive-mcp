@@ -242,13 +242,14 @@ async function navigateToDateFolder(
   if (startFolderId) {
     steps.push(`[override] Usando startFolderId -> ${startFolderId} (${clientName})`);
 
-    // Level 6: Month
+    // Level 6: Month (exact match first, then contains to achar "06. Junho" etc.)
     let pastaMes = await findFolder(drive, mesNome, startFolderId);
+    if (!pastaMes) pastaMes = await findFolderContains(drive, mesNome, startFolderId);
     if (!pastaMes) {
       pastaMes = await createFolder(drive, mesNome, startFolderId);
       steps.push(`[6/7] ${mesNome} — criado -> ${pastaMes.id}`);
     } else {
-      steps.push(`[6/7] ${mesNome} -> ${pastaMes.id}`);
+      steps.push(`[6/7] ${pastaMes.name} -> ${pastaMes.id}`);
     }
 
     // Level 7: Date (with optional type suffix)
@@ -339,13 +340,14 @@ async function navigateToDateFolder(
     }
   }
 
-  // Level 6: Month
+  // Level 6: Month (exact match first, then contains para achar "06. Junho" etc.)
   let pastaMes = await findFolder(drive, mesNome, pastaAno.id, driveId);
+  if (!pastaMes) pastaMes = await findFolderContains(drive, mesNome, pastaAno.id, driveId);
   if (!pastaMes) {
     pastaMes = await createFolder(drive, mesNome, pastaAno.id);
     steps.push(`[6/7] ${mesNome} — criado -> ${pastaMes.id}`);
   } else {
-    steps.push(`[6/7] ${mesNome} -> ${pastaMes.id}`);
+    steps.push(`[6/7] ${pastaMes.name} -> ${pastaMes.id}`);
   }
 
   // Level 7: Date (with optional type suffix)
