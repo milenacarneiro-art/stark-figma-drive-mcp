@@ -8,6 +8,7 @@ export const uploadDriveSchema = z.object({
   dryRun: z.boolean().optional().default(false).describe('Se true, apenas navega as pastas sem fazer upload'),
   credentialsPath: z.string().optional().describe('Caminho para o arquivo credentials.json do Google'),
   startFolderId: z.string().optional().describe('ID da pasta de ano no Drive para pular a navegação automática (ex: clientes com estrutura não-padrão)'),
+  folderSuffix: z.string().optional().describe('Sufixo do tipo de post a adicionar ao nome da pasta de data (ex: "Capa Reels", "Carrossel"). Cria pasta "[data] [sufixo]" em vez de só "[data]", evitando misturar tipos na mesma pasta.'),
 });
 
 export type UploadDriveInput = z.infer<typeof uploadDriveSchema>;
@@ -20,6 +21,7 @@ export async function handleUploadDrive(input: UploadDriveInput) {
     dryRun: input.dryRun,
     credentialsPath: input.credentialsPath,
     startFolderId: input.startFolderId,
+    folderSuffix: input.folderSuffix,
   });
 
   return {

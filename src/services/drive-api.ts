@@ -219,6 +219,7 @@ async function navigateToDateFolder(
   clientName: string,
   dateStr: string,
   startFolderId?: string,
+  folderSuffix?: string,
 ): Promise<NavigationResult> {
   // Aceita DD-MM, DD-MM-AA e YYYY-MM-DD — normaliza para YYYY-MM-DD
   const normalized = normalizeDate(dateStr);
@@ -250,15 +251,16 @@ async function navigateToDateFolder(
       steps.push(`[6/7] ${mesNome} -> ${pastaMes.id}`);
     }
 
-    // Level 7: Date
-    let pastaData = await findFolder(drive, dateStr, pastaMes.id);
+    // Level 7: Date (with optional type suffix)
+    const dateFolderName = folderSuffix ? `${dateStr} ${folderSuffix}` : dateStr;
+    let pastaData = await findFolder(drive, dateFolderName, pastaMes.id);
     let created = false;
     if (!pastaData) {
-      pastaData = await createFolder(drive, dateStr, pastaMes.id);
+      pastaData = await createFolder(drive, dateFolderName, pastaMes.id);
       created = true;
-      steps.push(`[7/7] ${dateStr} — criado -> ${pastaData.id}`);
+      steps.push(`[7/7] ${dateFolderName} — criado -> ${pastaData.id}`);
     } else {
-      steps.push(`[7/7] ${dateStr} -> ${pastaData.id}`);
+      steps.push(`[7/7] ${dateFolderName} -> ${pastaData.id}`);
     }
 
     const folderLink = pastaData.webViewLink ||
@@ -346,15 +348,16 @@ async function navigateToDateFolder(
     steps.push(`[6/7] ${mesNome} -> ${pastaMes.id}`);
   }
 
-  // Level 7: Date
-  let pastaData = await findFolder(drive, dateStr, pastaMes.id, driveId);
+  // Level 7: Date (with optional type suffix)
+  const dateFolderName = folderSuffix ? `${dateStr} ${folderSuffix}` : dateStr;
+  let pastaData = await findFolder(drive, dateFolderName, pastaMes.id, driveId);
   let created = false;
   if (!pastaData) {
-    pastaData = await createFolder(drive, dateStr, pastaMes.id);
+    pastaData = await createFolder(drive, dateFolderName, pastaMes.id);
     created = true;
-    steps.push(`[7/7] ${dateStr} — criado -> ${pastaData.id}`);
+    steps.push(`[7/7] ${dateFolderName} — criado -> ${pastaData.id}`);
   } else {
-    steps.push(`[7/7] ${dateStr} -> ${pastaData.id}`);
+    steps.push(`[7/7] ${dateFolderName} -> ${pastaData.id}`);
   }
 
   const folderLink = pastaData.webViewLink ||
@@ -370,11 +373,12 @@ export async function uploadToDrive(params: {
   dryRun?: boolean;
   credentialsPath?: string;
   startFolderId?: string;
+  folderSuffix?: string;
 }): Promise<UploadResult> {
-  const { clientName, date, files = [], dryRun = false, credentialsPath, startFolderId } = params;
+  const { clientName, date, files = [], dryRun = false, credentialsPath, startFolderId, folderSuffix } = params;
 
   const drive = getDriveService(credentialsPath);
-  const nav = await navigateToDateFolder(drive, clientName, date, startFolderId);
+  const nav = await navigateToDateFolder(drive, clientName, date, startFolderId, folderSuffix);
 
   if (dryRun) {
     return {
